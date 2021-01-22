@@ -18,7 +18,8 @@ class CommonParameters:
     net_confidence = None
 
     def load_parameters(self):
-        self.weights_path = '/home/agladyshev/Documents/UNN/DL/huawei/weights/ssd_trt_300.pth'  # TODO: temporal path
+        self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32_trt.pth'  # TODO: temporal path
+        # self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32.pth'  # TODO: temporal path
         self.video_path = '/home/agladyshev/Downloads/ChampsElysees_150610_03_Videvo.mov'   # TODO: temporal path
 
         self.target_width = 300
@@ -26,7 +27,7 @@ class CommonParameters:
         self.norm_mean = [123.675, 116.28, 103.53]
         self.norm_std = [58.395, 57.12, 57.375]
 
-        self.use_fp16_mode = True
+        self.use_fp16_mode = False
         self.use_tensorrt = True
         self.use_eval_mode = True
         self.device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')

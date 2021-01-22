@@ -1,31 +1,13 @@
 import cv2
 import torch
-import torch2trt
-import numpy as np
+
+from models.ssd.model import SSD300
+from models.ssd.processing_utils import padding_by_zeros, preprocess_input,\
+                                        decode_results, pick_best, get_coco_object_dictionary
 
 from profiler import LogDuration
 from common_parameters import CommonParameters
 from visual_utils import draw_bboxes, draw_fps
-
-
-def padding_by_zeros(image: np.ndarray) -> np.ndarray:
-    h, w, c = image.shape
-    max_size = max(w, h)
-    image_pad = np.zeros((max_size, max_size, c), dtype=np.uint8)
-    image_pad[:h, :w, :] = image
-    return image_pad
-
-
-def preprocess_input(image: np.ndarray, parameters: CommonParameters) -> torch.Tensor:
-    model_input = cv2.resize(image, (parameters.target_width, parameters.target_height))
-    model_input = (model_input - parameters.norm_mean) / parameters.norm_std
-    model_input = np.rollaxis(model_input, 2, 0)
-
-    model_input = torch.from_numpy(np.array([model_input]))
-    if parameters.use_fp16_mode:
-        model_input = model_input.half()
-    model_input = model_input.to(parameters.device)
-    return model_input
 
 
 def main():
@@ -34,15 +16,15 @@ def main():
     fps_logger = {}
     print_log = False
 
-    utils = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_ssd_processing_utils')
-    classes_to_labels = utils.get_coco_object_dictionary()
+    classes_to_labels = get_coco_object_dictionary()
 
     # Load model
     if not parameters.use_tensorrt:
-        ssd_model = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_ssd', model_math='fp32')
+        ssd_model = SSD300()
     else:
+        import torch2trt
         ssd_model = torch2trt.TRTModule()
-        ssd_model.load_state_dict(torch.load(parameters.weights_path))
+    ssd_model.load_state_dict(torch.load(parameters.weights_path))
     if parameters.use_fp16_mode:
         ssd_model.half()
     if parameters.use_eval_mode:
@@ -65,9 +47,8 @@ def main():
             detections_batch = ssd_model(model_input)
 
         with LogDuration('decode_results', logger=fps_logger, print_log=print_log):
-            results_per_input = utils.decode_results(detections_batch)
-            best_results_per_input = [utils.pick_best(results, parameters.net_confidence) for results in
-                                      results_per_input]
+            results_per_input = decode_results(detections_batch)
+            best_results_per_input = [pick_best(results, parameters.net_confidence) for results in results_per_input]
 
         draw_bboxes(frame,
                     best_results_per_input=best_results_per_input, image_idx=0,
