@@ -8,6 +8,14 @@ from common_parameters import CommonParameters
 from visual_utils import draw_bboxes, draw_fps
 
 
+def padding_by_zeros(image: np.ndarray) -> np.ndarray:
+    h, w, c = image.shape
+    max_size = max(w, h)
+    image_pad = np.zeros((max_size, max_size, c), dtype=np.uint8)
+    image_pad[:h, :w, :] = image
+    return image_pad
+
+
 def preprocess_input(image: np.ndarray, parameters: CommonParameters) -> torch.Tensor:
     model_input = cv2.resize(image, (parameters.target_width, parameters.target_height))
     model_input = (model_input - parameters.norm_mean) / parameters.norm_std
@@ -49,19 +57,22 @@ def main():
             break
 
         with LogDuration('preprocess_input', logger=fps_logger, print_log=print_log):
-            model_input = preprocess_input(frame, parameters)
+            model_input = padding_by_zeros(frame)
+            padding_image_width, padding_image_height = model_input.shape[1], model_input.shape[0]
+            model_input = preprocess_input(model_input, parameters)
 
         with torch.no_grad(), LogDuration('model_inference', logger=fps_logger, print_log=print_log):
             detections_batch = ssd_model(model_input)
 
         with LogDuration('decode_results', logger=fps_logger, print_log=print_log):
             results_per_input = utils.decode_results(detections_batch)
-            best_results_per_input = [utils.pick_best(results, parameters.net_confidence) for results in results_per_input]
+            best_results_per_input = [utils.pick_best(results, parameters.net_confidence) for results in
+                                      results_per_input]
 
         draw_bboxes(frame,
                     best_results_per_input=best_results_per_input, image_idx=0,
                     target_width=parameters.target_width, target_height=parameters.target_height,
-                    ratio_w=frame.shape[1] / parameters.target_width, ratio_h=frame.shape[0] / parameters.target_height,
+                    ratio_w=padding_image_width / parameters.target_width, ratio_h=padding_image_height / parameters.target_height,
                     classes_to_labels=classes_to_labels)
 
         draw_fps(frame, fps_logger)
