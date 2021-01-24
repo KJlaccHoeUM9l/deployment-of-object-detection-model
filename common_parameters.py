@@ -17,6 +17,11 @@ class CommonParameters:
 
     net_confidence = None
 
+    # Benchmarking
+    coco_data_path = None
+    eval_batch_size = None
+    num_workers = None
+
     def load_parameters(self):
         self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32_trt.pth'  # TODO: temporal path
         # self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32.pth'  # TODO: temporal path
@@ -33,3 +38,7 @@ class CommonParameters:
         self.device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
         self.net_confidence = 0.40
+
+        self.coco_data_path = '/home/agladyshev/Documents/UNN/DL/Datasets/COCO'     # TODO: temporal path
+        self.eval_batch_size = 1
+        self.num_workers = 4

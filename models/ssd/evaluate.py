@@ -25,6 +25,7 @@ def evaluate(model, coco, cocoGt, encoder, inv_map, args):
     if not args.no_cuda:
         model.cuda()
     ret = []
+    model_eval_times = []
     start = time.time()
 
     for nbatch, (img, img_id, img_size, _, _) in enumerate(tqdm(coco)):
@@ -34,7 +35,10 @@ def evaluate(model, coco, cocoGt, encoder, inv_map, args):
                 inp = inp.half()
 
             # Get predictions
+            model_eval_start = time.time()
             ploc, plabel = model(inp)
+            model_eval_times.append((time.time() - model_eval_start) / args.eval_batch_size)
+
             ploc, plabel = ploc.float(), plabel.float()
 
             # Handle the batch of predictions produced
@@ -80,7 +84,13 @@ def evaluate(model, coco, cocoGt, encoder, inv_map, args):
     E.summarize()
     print("Current AP: {:.5f}".format(E.stats[0]))
 
+    mean_performance_sec = np.mean(model_eval_times)
+    print('*************************************')
+    print('Model performance per sample:\n{:.5f} sec, {:.5f} fps'.format(mean_performance_sec,
+                                                                         1. / mean_performance_sec))
+    print('*************************************')
+
     # put your model in training mode back on
-    model.train()
+    model.bench()
 
     return E.stats[0]  # Average Precision  (AP) @[ IoU=050:0.95 | area=   all | maxDets=100 ]

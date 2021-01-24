@@ -1,11 +1,11 @@
-import torch
-import torch.utils.data.distributed
 from argparse import ArgumentParser
 
-from models.ssd.model import SSD300
 from models.ssd.utils import dboxes300_coco, Encoder
 from models.ssd.evaluate import evaluate
 from models.ssd.data import get_val_dataset, get_val_dataloader, get_coco_ground_truth
+
+from common_parameters import CommonParameters
+from utils_common import generate_model
 
 
 def make_parser():
@@ -27,10 +27,7 @@ def make_parser():
     return parser
 
 
-def train(args):
-    # Check that GPUs are actually available
-    use_cuda = not args.no_cuda
-
+def bench(args, parameters):
     # Setup data, defaults
     dboxes = dboxes300_coco()
     encoder = Encoder(dboxes)
@@ -39,13 +36,7 @@ def train(args):
     val_dataset = get_val_dataset(args)
     val_dataloader = get_val_dataloader(val_dataset, args)
 
-    ssd300 = SSD300()
-    ssd300.load_state_dict(torch.load(args.checkpoint))
-
-    if use_cuda:
-        ssd300.cuda()
-    if args.amp:
-        ssd300.half()
+    ssd300 = generate_model(parameters)
 
     inv_map = {v: k for k, v in val_dataset.label_map.items()}
 
@@ -56,15 +47,17 @@ def train(args):
 def main():
     parser = make_parser()
     args = parser.parse_args()
+    common_parameters = CommonParameters()
+    common_parameters.load_parameters()
 
-    args.data = '/home/agladyshev/Documents/UNN/DL/Datasets/COCO'
-    args.checkpoint = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32.pth'
-    args.amp = True
+    args.data = common_parameters.coco_data_path
+    args.checkpoint = common_parameters.weights_path
+    args.amp = common_parameters.use_fp16_mode
     args.no_cuda = False
-    args.eval_batch_size = 32
-    args.num_workers = 4
-    
-    train(args)
+    args.eval_batch_size = common_parameters.eval_batch_size
+    args.num_workers = common_parameters.num_workers
+
+    bench(args, common_parameters)
 
 
 if __name__ == "__main__":

@@ -1,13 +1,13 @@
 import cv2
 import torch
 
-from models.ssd.model import SSD300
 from models.ssd.processing_utils import padding_by_zeros, preprocess_input,\
                                         decode_results, pick_best, get_coco_object_dictionary
 
 from profiler import LogDuration
 from common_parameters import CommonParameters
-from visual_utils import draw_bboxes, draw_fps
+from utils_common import generate_model
+from utils_visual import draw_bboxes, draw_fps
 
 
 def main():
@@ -19,17 +19,7 @@ def main():
     classes_to_labels = get_coco_object_dictionary()
 
     # Load model
-    if not parameters.use_tensorrt:
-        ssd_model = SSD300()
-    else:
-        import torch2trt
-        ssd_model = torch2trt.TRTModule()
-    ssd_model.load_state_dict(torch.load(parameters.weights_path))
-    if parameters.use_fp16_mode:
-        ssd_model.half()
-    if parameters.use_eval_mode:
-        ssd_model.eval()
-    ssd_model.to(parameters.device)
+    ssd_model = generate_model(parameters)
 
     # Run demo
     cap = cv2.VideoCapture(parameters.video_path)
