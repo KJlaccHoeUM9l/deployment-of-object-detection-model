@@ -1,5 +1,7 @@
 import cv2
+import yaml
 import torch
+import numpy as np
 
 from models.ssd.processing_utils import padding_by_zeros, preprocess_input,\
                                         decode_results, pick_best, get_coco_object_dictionary
@@ -7,7 +9,7 @@ from models.ssd.processing_utils import padding_by_zeros, preprocess_input,\
 from profiler import LogDuration
 from common_parameters import CommonParameters
 from utils_common import generate_model
-from utils_visual import draw_bboxes, draw_fps
+from utils_visual import draw_bboxes, draw_fps, get_image_for_demo_app
 
 
 def main():
@@ -15,6 +17,15 @@ def main():
     parameters.load_parameters()
     fps_logger = {}
     print_log = False
+    if parameters.demo_mode:
+        with open('data/perspective_transforms.yaml', 'r') as stream:  # TODO: hardcode
+            try:
+                transforms = yaml.safe_load(stream)
+                perspective_projection_matrix = np.array(transforms['perspective_transform'])
+                perspective_image_width = int(transforms['perspective_image_width'])
+                perspective_image_height = int(transforms['perspective_image_height'])
+            except yaml.YAMLError as exc:
+                print(exc)
 
     classes_to_labels = get_coco_object_dictionary()
 
@@ -28,6 +39,9 @@ def main():
         if not ret:
             break
 
+        if parameters.demo_mode:
+            frame_for_demo = frame.copy()
+
         with LogDuration('preprocess_input', logger=fps_logger, print_log=print_log):
             model_input = padding_by_zeros(frame)
             padding_image_width, padding_image_height = model_input.shape[1], model_input.shape[0]
@@ -40,10 +54,12 @@ def main():
             results_per_input = decode_results(detections_batch)
             best_results_per_input = [pick_best(results, parameters.net_confidence) for results in results_per_input]
 
+        ratio_w = padding_image_width / parameters.target_width
+        ratio_h = padding_image_height / parameters.target_height
         draw_bboxes(frame,
                     best_results_per_input=best_results_per_input, image_idx=0,
                     target_width=parameters.target_width, target_height=parameters.target_height,
-                    ratio_w=padding_image_width / parameters.target_width, ratio_h=padding_image_height / parameters.target_height,
+                    ratio_w=ratio_w, ratio_h=ratio_h,
                     classes_to_labels=classes_to_labels)
 
         draw_fps(frame, fps_logger)
@@ -51,6 +67,13 @@ def main():
         resize_coefficient = 0.5
         frame = cv2.resize(frame, (int(frame.shape[1] * resize_coefficient), int(frame.shape[0] * resize_coefficient)))
         cv2.imshow('Detections', frame)
+
+        if parameters.demo_mode:
+            frame_for_demo = get_image_for_demo_app(frame_for_demo, best_results_per_input,
+                                                    perspective_projection_matrix, perspective_image_width, perspective_image_height,
+                                                    parameters, ratio_w, ratio_h)
+            cv2.imshow('Demo app', frame_for_demo)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

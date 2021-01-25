@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 
 def draw_bboxes(image: np.ndarray, best_results_per_input: List, image_idx: int,
@@ -43,3 +43,32 @@ def draw_fps(image: np.ndarray, fps_logger: Dict) -> None:
                     color=(0, 255, 0),
                     thickness=thickness)
         y += dy
+
+
+def perspective_transform_coordinates(x: float, y: float, transform_matrix: np.ndarray) -> Tuple[int, int]:
+    denominator = transform_matrix[2, 0] * x + transform_matrix[2, 1] * y + transform_matrix[2, 2]
+    return (int((transform_matrix[0, 0] * x + transform_matrix[0, 1] * y + transform_matrix[0, 2]) / denominator),
+            int((transform_matrix[1, 0] * x + transform_matrix[1, 1] * y + transform_matrix[1, 2]) / denominator))
+
+
+def get_image_for_demo_app(frame_for_demo, best_results_per_input,
+                           perspective_projection_matrix, perspective_image_width, perspective_image_height,
+                           parameters, ratio_w, ratio_h):
+    k = 0.8
+    up = int(k * perspective_image_height)
+    down = int(perspective_image_height)
+
+    frame_for_demo = cv2.warpPerspective(frame_for_demo, perspective_projection_matrix,
+                                         (perspective_image_width, perspective_image_height))
+    zone_image = frame_for_demo.copy()
+    cv2.rectangle(zone_image, (0, up), (perspective_image_width, down), (56, 253, 254), thickness=-1)
+    frame_for_demo = cv2.addWeighted(frame_for_demo, 0.8, zone_image, 0.2, 0)
+
+    bboxes, _, _ = best_results_per_input[0]
+    for left, _, right, top in bboxes:
+        x, y = (left + right) / 2. * parameters.target_width * ratio_w, top * parameters.target_height * ratio_h
+        x, y = perspective_transform_coordinates(x, y, perspective_projection_matrix)
+        color = (0, 255, 0) if y < up else (0, 0, 255)
+        cv2.circle(frame_for_demo, (x, y), 5, color, -1)
+
+    return frame_for_demo

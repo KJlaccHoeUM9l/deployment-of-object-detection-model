@@ -2,6 +2,8 @@ import torch
 
 
 class CommonParameters:
+    demo_mode = None
+
     weights_path = None
     video_path = None
 
@@ -23,7 +25,9 @@ class CommonParameters:
     num_workers = None
 
     def load_parameters(self):
-        self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_int8_calib_trt_batch_32.pth'  # TODO: temporal path
+        self.demo_mode = True
+
+        self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_int8_calib_trt.pth'  # TODO: temporal path
         # self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32_trt.pth'  # TODO: temporal path
         # self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32.pth'  # TODO: temporal path
         self.video_path = '/home/agladyshev/Downloads/ChampsElysees_150610_03_Videvo.mov'   # TODO: temporal path
