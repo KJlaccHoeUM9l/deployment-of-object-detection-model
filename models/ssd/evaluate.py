@@ -91,6 +91,6 @@ def evaluate(model, coco, cocoGt, encoder, inv_map, args):
     print('*************************************')
 
     # put your model in training mode back on
-    model.bench()
+    model.train()
 
     return E.stats[0]  # Average Precision  (AP) @[ IoU=050:0.95 | area=   all | maxDets=100 ]

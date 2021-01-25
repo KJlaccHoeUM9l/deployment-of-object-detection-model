@@ -23,7 +23,8 @@ class CommonParameters:
     num_workers = None
 
     def load_parameters(self):
-        self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32_trt.pth'  # TODO: temporal path
+        self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_int8_calib_trt_batch_32.pth'  # TODO: temporal path
+        # self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32_trt.pth'  # TODO: temporal path
         # self.weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32.pth'  # TODO: temporal path
         self.video_path = '/home/agladyshev/Downloads/ChampsElysees_150610_03_Videvo.mov'   # TODO: temporal path
 
@@ -40,5 +41,5 @@ class CommonParameters:
         self.net_confidence = 0.40
 
         self.coco_data_path = '/home/agladyshev/Documents/UNN/DL/Datasets/COCO'     # TODO: temporal path
-        self.eval_batch_size = 1
+        self.eval_batch_size = 32
         self.num_workers = 4
