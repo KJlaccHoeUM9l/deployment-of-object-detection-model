@@ -7,11 +7,12 @@ from utils_conversion import ImageFolderCalibDataset
 
 def main():
     use_fp16_mode = False
-    use_int8_mode = True
-    max_batch_size = 32
+    use_int8_mode = False
+    max_batch_size = 64
+
     # TODO: temporal paths
     load_weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32.pth'
-    save_weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_int8_calib_trt_batch_{}.pth'.format(max_batch_size)
+    save_weights_path = '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp32_trt_batch_{}.pth'.format(max_batch_size)
     calib_dataset_path = '/home/agladyshev/Desktop/coco_calib_data'
 
     model = SSD300()
@@ -30,7 +31,7 @@ def main():
                           fp16_mode=use_fp16_mode,
                           int8_mode=use_int8_mode,
                           int8_calib_dataset=dataset,
-                          int8_calib_batch_size=32  # TODO: hardcode calib batch size
+                          int8_calib_batch_size=16  # TODO: hardcode calib batch size
                           )
 
     torch.save(model_trt.state_dict(), save_weights_path)
