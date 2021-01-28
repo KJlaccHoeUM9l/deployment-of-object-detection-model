@@ -1,0 +1,16 @@
+demo_mode: true
+weights_path: '/home/agladyshev/Documents/UNN/DL/ssd_weights/ssd_fp16.pth'
+video_path: '/home/agladyshev/Downloads/ChampsElysees_150610_03_Videvo.mov'
+target_width: 300
+target_height: 300
+norm_mean: [123.675, 116.28, 103.53]
+norm_std: [58.395, 57.12, 57.375]
+use_fp16_mode: true
+use_tensorrt: false
+use_eval_mode: true
+net_confidence: 0.4
+
+# Benchmarking
+coco_data_path: '/home/agladyshev/Documents/UNN/DL/Datasets/COCO'
+eval_batch_size: 64
+num_workers: 4

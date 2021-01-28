@@ -14,7 +14,7 @@ from common_parameters import CommonParameters
 
 def main():
     parameters = CommonParameters()
-    parameters.load_parameters()
+    parameters.load_parameters('config.yaml')
     fps_logger = {}
     print_log = False
     if parameters.demo_mode:

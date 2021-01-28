@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from typing import List, Dict, Tuple
+from common_parameters import CommonParameters
 
 
 def draw_bboxes(image: np.ndarray, best_results_per_input: List, image_idx: int,
@@ -51,9 +52,10 @@ def perspective_transform_coordinates(x: float, y: float, transform_matrix: np.n
             int((transform_matrix[1, 0] * x + transform_matrix[1, 1] * y + transform_matrix[1, 2]) / denominator))
 
 
-def get_image_for_demo_app(frame_for_demo, best_results_per_input,
-                           perspective_projection_matrix, perspective_image_width, perspective_image_height,
-                           parameters, ratio_w, ratio_h):
+def get_image_for_demo_app(frame_for_demo: np.ndarray, best_results_per_input: List,
+                           perspective_projection_matrix: np.ndarray,
+                           perspective_image_width: int, perspective_image_height: int,
+                           parameters: CommonParameters, ratio_w: float, ratio_h: float) -> np.ndarray:
     k = 0.8
     up = int(k * perspective_image_height)
     down = int(perspective_image_height)
