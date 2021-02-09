@@ -14,11 +14,11 @@ from common_parameters import CommonParameters
 
 def main():
     parameters = CommonParameters()
-    parameters.load_parameters('config.yaml')
+    parameters.load_parameters('conf/config.yaml')
     fps_logger = {}
     print_log = False
     if parameters.demo_mode:
-        with open('data/perspective_transforms.yaml', 'r') as stream:  # TODO: hardcode
+        with open('data/perspective_transforms.yaml', 'r') as stream:
             try:
                 transforms = yaml.safe_load(stream)
                 perspective_projection_matrix = np.array(transforms['perspective_transform'])
@@ -27,7 +27,7 @@ def main():
             except yaml.YAMLError as exc:
                 print(exc)
 
-    classes_to_labels = get_coco_object_dictionary('data/category_names.txt')    # TODO: hardcode
+    classes_to_labels = get_coco_object_dictionary('data/category_names.txt')
 
     # Load model
     ssd_model = generate_model(parameters)

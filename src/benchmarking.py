@@ -48,7 +48,7 @@ def main():
     parser = make_parser()
     args = parser.parse_args()
     common_parameters = CommonParameters()
-    common_parameters.load_parameters()
+    common_parameters.load_parameters('conf/config.yaml')
 
     args.data = common_parameters.coco_data_path
     args.checkpoint = common_parameters.weights_path
