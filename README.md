@@ -161,7 +161,7 @@ from the section `Tar File Installation`.
 tar xzvf TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0.tar.gz
 ``` 
 - Export the absolute path to the terminal:
-`<directory where the archive was unpacked>/TensorRT-6.0.1.8/lib`
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<directory where the archive was unpacked>/TensorRT-6.0.1.8/lib`
 - `cd TensorRT-${version}/python`
 - `pip install tensorrt-6.0.1.8-cp37-none-linux_x86_64.whl`
 - `cd TensorRT-${version}/uff`
